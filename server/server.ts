@@ -6,6 +6,7 @@ import {environment} from '../common/environment';
 import {mergePatchBodyParser} from './merge-patch.server';
 import {handleError} from './error.handler';
 import {tokenParser} from '../security/token.parser';
+import {logger} from '../common/logger';
 
 export class Server{
 
@@ -26,6 +27,7 @@ export class Server{
                 const options:restify.ServerOptions = {
                     name:'meat-api',
                     version:'1.0.0',
+                    log:logger
                 }
                 if(environment.security.enableHTTPS){
                     options.certificate = fs.readFileSync(environment.security.certificate);
@@ -39,6 +41,26 @@ export class Server{
                 this.application.use(mergePatchBodyParser);
                 this.application.on('restifyError', handleError);
                 this.application.use(tokenParser);//colocando no use o tokenParser estará disponível em todo request
+
+                //request logger
+                this.application.pre(restify.plugins.requestLogger({
+                    log:logger,//logger parent
+                    
+                }));
+
+                //colocar as informações que vem no request
+                //callback de assinatura (req,resp,error)
+                this.application.on('after', restify.plugins.auditLogger({
+                    log:logger,
+                    event:'after',
+                    server:this.application,//passando o server, é possível se inscrever no evento audit abaixo
+                    body:true//logar o body no request
+                }));
+
+                /*this.application.on('audit', data=>{
+
+                });
+                */
 
                 //routes
                 for(let route of routers){//for com objeto eh com 'in'

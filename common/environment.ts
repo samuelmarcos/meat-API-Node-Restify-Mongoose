@@ -7,5 +7,9 @@ export const environment = {
         enableHTTPS: process.env.ENABLE_HTTPS || false,
         certificate: process.env.CERTI_FILE || '../security/keys/cert.pem',
         key: process.env.CERT_KEY_FILE || '../security/keys/key.pem'
+    },
+    log:{
+        level:process.env.LOG_LEVEL || 'debug',
+        name:'meat-api'
     }
 }
